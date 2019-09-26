@@ -68,13 +68,17 @@ MESA3D_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -mno-compact-eh"
 MESA3D_CONF_ENV += CXXFLAGS="$(TARGET_CXXFLAGS) -mno-compact-eh"
 endif
 
-ifeq ($(BR2_PACKAGE_MESA3D_OPENGL_GLX),y)
-# Disable-mangling not yet supported by meson build system.
-# glx:
-#  dri          : dri based GLX requires at least one DRI driver || dri based GLX requires shared-glapi
-#  xlib         : xlib conflicts with any dri driver
-#  gallium-xlib : Gallium-xlib based GLX requires at least one gallium driver || Gallium-xlib based GLX requires softpipe or llvmpipe || gallium-xlib conflicts with any dri driver.
-MESA3D_CONF_OPTS += -Dglx=dri
+ifeq ($(BR2_PACKAGE_XORG7),y)
+MESA3D_DEPENDENCIES += \
+	xlib_libX11 \
+	xlib_libXext \
+	xlib_libXdamage \
+	xlib_libXfixes \
+	xlib_libXrandr \
+	xlib_libXxf86vm \
+	xorgproto \
+	libxcb
+
 ifeq ($(BR2_PACKAGE_MESA3D_NEEDS_XA),y)
 MESA3D_CONF_OPTS += -Dgallium-xa=true
 else
@@ -164,7 +168,7 @@ MESA3D_CONF_OPTS += -Dopengl=true
 MESA3D_CONF_OPTS += -Dgallium-va=false
 
 # libGL is only provided for a full xorg stack
-ifeq ($(BR2_PACKAGE_MESA3D_OPENGL_GLX),y)
+ifeq ($(BR2_PACKAGE_XORG7),y)
 MESA3D_PROVIDES += libgl
 else
 define MESA3D_REMOVE_OPENGL_HEADERS
@@ -196,16 +200,7 @@ MESA3D_DEPENDENCIES += wayland wayland-protocols
 MESA3D_PLATFORMS += wayland
 MESA3D_CONF_OPTS += -Dwayland-scanner-path=$(HOST_DIR)/bin/wayland-scanner
 endif
-ifeq ($(BR2_PACKAGE_MESA3D_OPENGL_GLX),y)
-MESA3D_DEPENDENCIES += \
-	xlib_libX11 \
-	xlib_libXext \
-	xlib_libXdamage \
-	xlib_libXfixes \
-	xlib_libXrandr \
-	xlib_libXxf86vm \
-	xorgproto \
-	libxcb
+ifeq ($(BR2_PACKAGE_XORG7),y)
 MESA3D_PLATFORMS += x11
 endif
 
